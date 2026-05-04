@@ -530,46 +530,83 @@
       } catch (e) { console.warn('audio', e); }
     }, []);
 
-    // Doppel-Klock für 10s-Warnung
+    // Drei Holz-Claps für die 10s-Warnung
+    // (zwei Holzstücke aufeinander -> kurzer Noise-Burst mit Holz-Resonanz)
     const playBeep = useCallback(() => {
       try {
         const ctx = getCtx();
         const master = getMaster();
         const now = ctx.currentTime;
-        const makeKlock = (off) => {
-          const t = now + off;
-          const osc = ctx.createOscillator();
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(900, t);
-          osc.frequency.exponentialRampToValueAtTime(380, t + 0.04);
-          const og = ctx.createGain();
-          og.gain.setValueAtTime(0.0001, t);
-          og.gain.exponentialRampToValueAtTime(1.0, t + 0.003);
-          og.gain.exponentialRampToValueAtTime(0.0001, t + 0.08);
-          osc.connect(og);
-          og.connect(master);
-          osc.start(t);
-          osc.stop(t + 0.1);
 
-          const noiseLen = 0.03;
+        const makeClap = (off) => {
+          const t = now + off;
+
+          // 1) Anschlag-Transient: scharfer Noise-Burst durch Highpass
+          const noiseLen = 0.06;
           const buf = ctx.createBuffer(1, ctx.sampleRate * noiseLen, ctx.sampleRate);
           const data = buf.getChannelData(0);
-          for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+          for (let i = 0; i < data.length; i++) {
+            // Leicht abklingendes Rauschen
+            const decay = 1 - (i / data.length);
+            data[i] = (Math.random() * 2 - 1) * decay;
+          }
           const noise = ctx.createBufferSource();
           noise.buffer = buf;
-          const bp = ctx.createBiquadFilter();
-          bp.type = 'bandpass';
-          bp.frequency.value = 2200;
-          bp.Q.value = 1.5;
+
+          const hp = ctx.createBiquadFilter();
+          hp.type = 'highpass';
+          hp.frequency.value = 1500;
+          hp.Q.value = 0.7;
+
           const ng = ctx.createGain();
           ng.gain.setValueAtTime(0.0001, t);
-          ng.gain.exponentialRampToValueAtTime(0.6, t + 0.002);
-          ng.gain.exponentialRampToValueAtTime(0.0001, t + 0.025);
-          noise.connect(bp); bp.connect(ng); ng.connect(master);
-          noise.start(t); noise.stop(t + noiseLen);
+          ng.gain.exponentialRampToValueAtTime(0.9, t + 0.001);
+          ng.gain.exponentialRampToValueAtTime(0.0001, t + 0.04);
+
+          noise.connect(hp);
+          hp.connect(ng);
+          ng.connect(master);
+          noise.start(t);
+          noise.stop(t + noiseLen);
+
+          // 2) Holz-Resonanz: kurzer tonaler Anteil mit schnellem Pitch-Drop
+          // gibt dem Clap das "Hohle" von Holz
+          const osc1 = ctx.createOscillator();
+          osc1.type = 'triangle';
+          osc1.frequency.setValueAtTime(2400, t);
+          osc1.frequency.exponentialRampToValueAtTime(800, t + 0.025);
+
+          const og1 = ctx.createGain();
+          og1.gain.setValueAtTime(0.0001, t);
+          og1.gain.exponentialRampToValueAtTime(0.7, t + 0.002);
+          og1.gain.exponentialRampToValueAtTime(0.0001, t + 0.05);
+
+          osc1.connect(og1);
+          og1.connect(master);
+          osc1.start(t);
+          osc1.stop(t + 0.06);
+
+          // 3) Tieferer Body-Anteil für die "Wucht" des Aufeinanderschlagens
+          const osc2 = ctx.createOscillator();
+          osc2.type = 'sine';
+          osc2.frequency.setValueAtTime(450, t);
+          osc2.frequency.exponentialRampToValueAtTime(180, t + 0.04);
+
+          const og2 = ctx.createGain();
+          og2.gain.setValueAtTime(0.0001, t);
+          og2.gain.exponentialRampToValueAtTime(0.5, t + 0.003);
+          og2.gain.exponentialRampToValueAtTime(0.0001, t + 0.08);
+
+          osc2.connect(og2);
+          og2.connect(master);
+          osc2.start(t);
+          osc2.stop(t + 0.1);
         };
-        makeKlock(0);
-        makeKlock(0.13);
+
+        // Drei Claps mit gleichmäßigem Abstand
+        makeClap(0);
+        makeClap(0.18);
+        makeClap(0.36);
       } catch (e) { console.warn('audio', e); }
     }, []);
 
@@ -997,7 +1034,7 @@
           <div className="setting-card">
             <div className="setting-info">
               <div className="setting-label">10-Sekunden-Signal</div>
-              <div className="setting-hint">Doppel-Klock 10s vor Rundenende</div>
+              <div className="setting-hint">Drei Claps 10s vor Rundenende</div>
             </div>
             <div className="signal-row">
               <button className="test-btn" onClick={() => playBeep()}>♪ TEST</button>
@@ -1012,7 +1049,7 @@
                 {wakeLock.held ? '● DISPLAY AN' : '○ DISPLAY'}
               </span>
             )}
-            <div style={{ marginTop: '8px', opacity: 0.6 }}>VERSION 0.2</div>
+            <div style={{ marginTop: '8px', opacity: 0.6 }}>VERSION 0.3</div>
           </div>
         </div>
       </>
