@@ -1,4 +1,4 @@
-# Einfach Rundentimer für Boxtraining
+# Einfacher Rundentimer für Boxtraining
 Simpler Timer für Trainingsrunden
 
 Features:
