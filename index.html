@@ -530,6 +530,27 @@
       } catch (e) { console.warn('audio', e); }
     }, []);
 
+    // Langes einzelnes Piepsen am Trainingsende
+    const playFinal = useCallback(() => {
+      try {
+        const ctx = getCtx();
+        const master = getMaster();
+        const t = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const g = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = 1760; // gleiche Höhe wie Doppel-Pieps
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.exponentialRampToValueAtTime(0.9, t + 0.01);
+        g.gain.setValueAtTime(0.9, t + 0.9);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + 1.0);
+        osc.connect(g);
+        g.connect(master);
+        osc.start(t);
+        osc.stop(t + 1.05);
+      } catch (e) { console.warn('audio', e); }
+    }, []);
+
     // Drei Holz-Claps für die 10s-Warnung
     // (zwei Holzstücke aufeinander -> kurzer Noise-Burst mit Holz-Resonanz)
     const playBeep = useCallback(() => {
@@ -610,7 +631,7 @@
       } catch (e) { console.warn('audio', e); }
     }, []);
 
-    return { playGong, playBeep, prime: getCtx, startSilentKeepAlive };
+    return { playGong, playBeep, playFinal, prime: getCtx, startSilentKeepAlive };
   }
 
   // ---- WAKE LOCK ----
@@ -787,7 +808,7 @@
     const tickRef = useRef(null);
     const targetEndRef = useRef(null); // Wall-Clock-Ziel für drift-freie Zeit
 
-    const { playGong, playBeep, prime, startSilentKeepAlive } = useAudio();
+    const { playGong, playBeep, playFinal, prime, startSilentKeepAlive } = useAudio();
     const wakeLock = useWakeLock(running);
 
     // Settings persistieren
@@ -843,14 +864,15 @@
 
       if (remaining <= 0) {
         if (phase === 'round') {
-          playGong();
           // Bei rounds === 0 (unendlich) nie auf 'done', immer weiter
           if (rounds !== 0 && currentRound >= rounds) {
+            playFinal(); // langes Piepsen am Trainingsende
             setPhase('done');
             setRunning(false);
             targetEndRef.current = null;
             setRemaining(0);
           } else {
+            playGong();
             setPhase('rest');
             const dur = restSec;
             targetEndRef.current = Date.now() + dur * 1000;
@@ -866,7 +888,7 @@
           lastWarnedRef.current = null;
         }
       }
-    }, [remaining, running, phase, currentRound, rounds, roundSec, restSec, warn10, playGong, playBeep]);
+    }, [remaining, running, phase, currentRound, rounds, roundSec, restSec, warn10, playGong, playBeep, playFinal]);
 
     const handlePrime = () => {
       prime();
@@ -1049,7 +1071,7 @@
                 {wakeLock.held ? '● DISPLAY AN' : '○ DISPLAY'}
               </span>
             )}
-            <div style={{ marginTop: '8px', opacity: 0.6 }}>VERSION 0.3</div>
+            <div style={{ marginTop: '8px', opacity: 0.6 }}>VERSION 0.1</div>
           </div>
         </div>
       </>
