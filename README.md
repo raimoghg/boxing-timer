@@ -1,7 +1,6 @@
 # Einfacher Rundentimer für Boxtraining
 Simpler Timer für Trainingsrunden
-
-Features:
+* Open Source
 * Optimiert für iPhones
 * Webapp muss offen bleiben, damit Töne gespielt werden
 * Unbebrenzt Runden möglich
