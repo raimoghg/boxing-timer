@@ -1,4 +1,19 @@
-<div id="root"></div>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<title>Boxing Timer</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+
+<!-- iOS PWA Meta -->
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Boxing Timer" />
+<meta name="theme-color" content="#0a0a0a" />
+<meta name="format-detection" content="telephone=no" />
+
+<!-- Inline-Manifest und Icon (Base64-SVG) -->
+<link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxODAgMTgwIj48cmVjdCB3aWR0aD0iMTgwIiBoZWlnaHQ9IjE4MCIgZmlsbD0iIzBhMGEwYSIvPjxyZWN0IHg9IjMyIiB5PSIzMiIgd2lkdGg9IjExNiIgaGVpZ2h0PSIxMTYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2U2Mzk0NiIgc3Ryb2tlLXdpZHRoPSI2IiB0cmFuc2Zvcm09InJvdGF0ZSgtNCA5MCA5MCkiLz48dGV4dCB4PSI5MCIgeT0iMTEyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjZjVmMWU4IiBmb250LWZhbWlseT0iSGVsdmV0aWNhLEFyaWFsLHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI5MDAiIGZvbnQtc2l6ZT0iNTYiIGxldHRlci1zcGFjaW5nPSIyIj5CWDwvdGV4dD48L3N2Zz4=" />
 
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@400;700;800&family=Oswald:wght@300;500;700&display=swap');
@@ -14,17 +29,34 @@
     --red-deep: #9d2128;
     --gold: #d4a24c;
     --green: #4ade80;
+
+    /* Safe Areas */
+    --sat: env(safe-area-inset-top);
+    --sab: env(safe-area-inset-bottom);
+    --sal: env(safe-area-inset-left);
+    --sar: env(safe-area-inset-right);
   }
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+  }
 
   html, body {
     background: var(--bg);
     color: var(--ink);
     font-family: 'Oswald', sans-serif;
     min-height: 100vh;
+    min-height: 100dvh;
     -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
+    overscroll-behavior: none;
+    -webkit-user-select: none;
+    user-select: none;
+    touch-action: manipulation;
   }
 
   body {
@@ -32,6 +64,11 @@
       radial-gradient(circle at 20% 0%, rgba(230, 57, 70, 0.08), transparent 50%),
       radial-gradient(circle at 80% 100%, rgba(212, 162, 76, 0.05), transparent 50%);
     background-attachment: fixed;
+    padding:
+      calc(var(--sat) + 12px)
+      var(--sar)
+      calc(var(--sab) + 16px)
+      var(--sal);
   }
 
   body::before {
@@ -49,7 +86,7 @@
     z-index: 2;
     max-width: 720px;
     margin: 0 auto;
-    padding: 32px 20px 48px;
+    padding: 8px 16px 24px;
   }
 
   /* HEADER */
@@ -58,49 +95,38 @@
     align-items: center;
     justify-content: space-between;
     border-bottom: 2px solid var(--line);
-    padding-bottom: 18px;
-    margin-bottom: 28px;
+    padding-bottom: 14px;
+    margin-bottom: 18px;
   }
-  .brand {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-  }
+  .brand { display: flex; align-items: center; gap: 12px; }
   .logo {
-    width: 44px;
-    height: 44px;
+    width: 40px; height: 40px;
     border: 2px solid var(--red);
-    display: grid;
-    place-items: center;
+    display: grid; place-items: center;
     transform: rotate(-4deg);
     background: linear-gradient(135deg, var(--red-deep), var(--red));
-    box-shadow: 0 0 24px rgba(230, 57, 70, 0.35);
+    box-shadow: 0 0 20px rgba(230, 57, 70, 0.35);
+    flex-shrink: 0;
   }
   .logo span {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 24px;
-    letter-spacing: 1px;
-    color: white;
+    font-size: 22px; letter-spacing: 1px; color: white;
   }
   .title {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 30px;
-    letter-spacing: 4px;
-    line-height: 1;
+    font-size: 26px; letter-spacing: 3px; line-height: 1;
   }
   .subtitle {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 3px;
+    font-size: 9px; letter-spacing: 2.5px;
     color: var(--muted);
     text-transform: uppercase;
-    margin-top: 4px;
+    margin-top: 3px;
   }
   .meta {
     text-align: right;
     font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 2px;
+    font-size: 10px; letter-spacing: 1.5px;
     color: var(--muted);
     text-transform: uppercase;
     line-height: 1.6;
@@ -112,8 +138,8 @@
     background: var(--surface);
     border: 1px solid var(--line);
     border-left: 6px solid var(--red);
-    padding: 14px 20px;
-    margin-bottom: 18px;
+    padding: 12px 16px;
+    margin-bottom: 14px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -131,14 +157,11 @@
   }
   .phase-label {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 22px;
-    letter-spacing: 3px;
+    font-size: 22px; letter-spacing: 3px;
   }
   .round-counter {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 14px;
-    color: var(--muted);
-    letter-spacing: 2px;
+    font-size: 14px; color: var(--muted); letter-spacing: 2px;
   }
   .round-counter b { color: var(--ink); font-weight: 800; }
 
@@ -146,11 +169,11 @@
   .display {
     background: var(--surface);
     border: 1px solid var(--line);
-    padding: 38px 20px 32px;
+    padding: 32px 16px 26px;
     text-align: center;
     position: relative;
     overflow: hidden;
-    margin-bottom: 24px;
+    margin-bottom: 18px;
   }
   .display::before {
     content: '';
@@ -159,26 +182,25 @@
     height: 3px;
     background: linear-gradient(90deg, transparent, var(--red), transparent);
   }
-  .display .corner {
-    position: absolute;
-    width: 18px;
-    height: 18px;
+  .corner {
+    position: absolute; width: 16px; height: 16px;
     border-color: var(--muted);
   }
-  .display .corner.tl { top: 8px; left: 8px; border-top: 2px solid; border-left: 2px solid; }
-  .display .corner.tr { top: 8px; right: 8px; border-top: 2px solid; border-right: 2px solid; }
-  .display .corner.bl { bottom: 8px; left: 8px; border-bottom: 2px solid; border-left: 2px solid; }
-  .display .corner.br { bottom: 8px; right: 8px; border-bottom: 2px solid; border-right: 2px solid; }
+  .corner.tl { top: 8px; left: 8px; border-top: 2px solid; border-left: 2px solid; }
+  .corner.tr { top: 8px; right: 8px; border-top: 2px solid; border-right: 2px solid; }
+  .corner.bl { bottom: 8px; left: 8px; border-bottom: 2px solid; border-left: 2px solid; }
+  .corner.br { bottom: 8px; right: 8px; border-bottom: 2px solid; border-right: 2px solid; }
 
   .timer {
     font-family: 'JetBrains Mono', monospace;
     font-weight: 800;
-    font-size: clamp(96px, 22vw, 180px);
+    font-size: clamp(88px, 24vw, 180px);
     letter-spacing: -4px;
     line-height: 1;
     color: var(--ink);
     text-shadow: 0 0 40px rgba(245, 241, 232, 0.1);
     transition: color 0.2s;
+    font-variant-numeric: tabular-nums;
   }
   .timer.warn { color: var(--red); text-shadow: 0 0 60px rgba(230, 57, 70, 0.5); }
   .timer.rest { color: var(--gold); }
@@ -187,7 +209,7 @@
   .progress {
     height: 4px;
     background: var(--surface-2);
-    margin-top: 24px;
+    margin-top: 22px;
     position: relative;
     overflow: hidden;
   }
@@ -200,72 +222,70 @@
   }
   .progress-bar.rest { background: var(--gold); }
 
-  /* CONTROLS */
-  .controls {
+  /* PRIMARY BUTTON GROSS */
+  .primary-action {
+    width: 100%;
+    background: var(--red);
+    border: none;
+    color: white;
+    padding: 24px 12px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 4px;
+    cursor: pointer;
+    box-shadow: 0 0 24px rgba(230, 57, 70, 0.3);
+    margin-bottom: 10px;
+    transition: transform 0.08s, background 0.2s;
+  }
+  .primary-action:active { transform: scale(0.98); background: var(--red-deep); }
+  .primary-action.pause { background: var(--surface); border: 2px solid var(--ink); box-shadow: none; }
+
+  /* SECONDARY ROW */
+  .secondary {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 10px;
-    margin-bottom: 32px;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 28px;
   }
   .btn {
     background: var(--surface);
     border: 1px solid var(--line);
     color: var(--ink);
-    padding: 18px 12px;
+    padding: 16px 12px;
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 18px;
+    font-size: 16px;
     letter-spacing: 3px;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: transform 0.08s, border-color 0.2s;
     text-transform: uppercase;
-    -webkit-tap-highlight-color: transparent;
   }
-  .btn:hover { border-color: var(--ink); transform: translateY(-1px); }
-  .btn:active { transform: translateY(0); }
-  .btn.primary {
-    background: var(--red);
-    border-color: var(--red);
-    color: white;
-    box-shadow: 0 0 24px rgba(230, 57, 70, 0.3);
-  }
-  .btn.primary:hover { background: var(--red-deep); border-color: var(--red-deep); }
-  .btn.ghost { background: transparent; }
-  .btn:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
+  .btn:active { transform: scale(0.97); border-color: var(--ink); }
+  .btn:disabled { opacity: 0.3; }
 
   /* SETTINGS */
   .settings-title {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    margin-bottom: 18px;
-    margin-top: 8px;
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 14px; margin-top: 4px;
   }
   .settings-title h2 {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 20px;
-    letter-spacing: 4px;
+    font-size: 18px; letter-spacing: 4px;
   }
-  .settings-title .line {
-    flex: 1;
-    height: 1px;
-    background: var(--line);
-  }
+  .settings-title .line { flex: 1; height: 1px; background: var(--line); }
   .settings-title .num {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    color: var(--muted);
-    letter-spacing: 2px;
+    font-size: 11px; color: var(--muted); letter-spacing: 2px;
   }
 
   .setting-card {
     background: var(--surface);
     border: 1px solid var(--line);
-    padding: 18px 20px;
-    margin-bottom: 10px;
+    padding: 16px 18px;
+    margin-bottom: 8px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 16px;
+    gap: 14px;
   }
   .setting-card.disabled { opacity: 0.4; pointer-events: none; }
 
@@ -276,7 +296,6 @@
     font-size: 13px;
     letter-spacing: 2px;
     text-transform: uppercase;
-    color: var(--ink);
     margin-bottom: 2px;
   }
   .setting-hint {
@@ -295,24 +314,25 @@
     padding: 4px;
   }
   .stepper button {
-    width: 38px;
-    height: 38px;
+    width: 46px;
+    height: 46px;
     background: transparent;
     border: none;
     color: var(--ink);
-    font-size: 22px;
+    font-size: 26px;
     font-family: 'Bebas Neue', sans-serif;
     cursor: pointer;
     transition: background 0.15s;
-    -webkit-tap-highlight-color: transparent;
+    display: grid;
+    place-items: center;
   }
-  .stepper button:hover:not(:disabled) { background: var(--surface-2); color: var(--red); }
-  .stepper button:disabled { opacity: 0.3; cursor: not-allowed; }
+  .stepper button:active:not(:disabled) { background: var(--surface-2); color: var(--red); }
+  .stepper button:disabled { opacity: 0.25; }
   .stepper .value {
     font-family: 'JetBrains Mono', monospace;
     font-weight: 800;
     font-size: 18px;
-    min-width: 78px;
+    min-width: 80px;
     text-align: center;
     letter-spacing: 1px;
   }
@@ -320,8 +340,7 @@
   /* TOGGLE */
   .toggle {
     position: relative;
-    width: 56px;
-    height: 30px;
+    width: 60px; height: 34px;
     background: var(--bg);
     border: 1px solid var(--line);
     cursor: pointer;
@@ -332,18 +351,33 @@
     content: '';
     position: absolute;
     top: 3px; left: 3px;
-    width: 22px;
-    height: 22px;
+    width: 26px; height: 26px;
     background: var(--muted);
     transition: transform 0.2s, background 0.2s;
   }
   .toggle.on { border-color: var(--red); }
   .toggle.on::after { transform: translateX(26px); background: var(--red); }
 
+  .signal-row {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .test-btn {
+    padding: 8px 12px;
+    font-size: 12px;
+    letter-spacing: 2px;
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--ink);
+    font-family: 'Bebas Neue', sans-serif;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  .test-btn:active { border-color: var(--red); }
+
   /* FOOTER */
   .footer {
-    margin-top: 32px;
-    padding-top: 20px;
+    margin-top: 24px;
+    padding-top: 16px;
     border-top: 1px solid var(--line);
     font-family: 'JetBrains Mono', monospace;
     font-size: 10px;
@@ -352,22 +386,77 @@
     text-align: center;
     text-transform: uppercase;
   }
-
-  @media (max-width: 480px) {
-    .controls { grid-template-columns: 1fr; }
-    .meta { font-size: 9px; }
-    .title { font-size: 24px; }
-    .stepper .value { min-width: 64px; font-size: 16px; }
-    .stepper button { width: 34px; height: 34px; }
+  .footer .wake {
+    display: inline-block;
+    padding: 2px 8px;
+    margin-left: 6px;
+    border: 1px solid var(--line);
+    color: var(--muted);
   }
+  .footer .wake.on { color: var(--green); border-color: var(--green); }
+
+  /* AUDIO-PRIMER OVERLAY */
+  .primer {
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 10, 10, 0.96);
+    z-index: 100;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    backdrop-filter: blur(8px);
+  }
+  .primer-card {
+    max-width: 380px;
+    text-align: center;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    padding: 32px 24px;
+  }
+  .primer-card h3 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 4px;
+    margin-bottom: 14px;
+  }
+  .primer-card p {
+    font-family: 'Oswald', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .primer-card p strong { color: var(--ink); font-weight: 500; }
+  .primer-card button {
+    margin-top: 20px;
+    width: 100%;
+    background: var(--red);
+    border: none;
+    color: white;
+    padding: 18px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 3px;
+    cursor: pointer;
+  }
+  .primer-card button:active { background: var(--red-deep); }
 </style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
 <script type="text/babel">
   const { useState, useEffect, useRef, useCallback } = React;
 
-  // ---- Audio helpers (WebAudio, kein externes Asset) ----
+  // ---- AUDIO ----
   function useAudio() {
     const ctxRef = useRef(null);
+    const silentLoopRef = useRef(null);
+
     const getCtx = () => {
       if (!ctxRef.current) {
         ctxRef.current = new (window.AudioContext || window.webkitAudioContext)();
@@ -376,18 +465,34 @@
       return ctxRef.current;
     };
 
-    // Doppel-Pieps für Rundenstart und Rundenende (zwei kurze hohe Töne)
+    // Stiller Loop, hält den AudioContext auf iOS aktiv (verhindert "Audio bricht ab")
+    const startSilentKeepAlive = () => {
+      if (silentLoopRef.current) return;
+      const ctx = getCtx();
+      const buf = ctx.createBuffer(1, ctx.sampleRate * 1, ctx.sampleRate);
+      // alle Samples bleiben 0 -> stiller Buffer
+      const src = ctx.createBufferSource();
+      src.buffer = buf;
+      src.loop = true;
+      const g = ctx.createGain();
+      g.gain.value = 0;
+      src.connect(g);
+      g.connect(ctx.destination);
+      src.start();
+      silentLoopRef.current = src;
+    };
+
+    // Doppel-Pieps für Rundenstart und Rundenende
     const playGong = useCallback(() => {
       try {
         const ctx = getCtx();
         const now = ctx.currentTime;
-
-        const makePip = (startOffset) => {
-          const t = now + startOffset;
+        const makePip = (off) => {
+          const t = now + off;
           const osc = ctx.createOscillator();
           const g = ctx.createGain();
           osc.type = 'sine';
-          osc.frequency.value = 1760; // hoch & durchdringend (A6)
+          osc.frequency.value = 1760;
           g.gain.setValueAtTime(0.0001, t);
           g.gain.exponentialRampToValueAtTime(0.5, t + 0.008);
           g.gain.setValueAtTime(0.5, t + 0.18);
@@ -397,72 +502,138 @@
           osc.start(t);
           osc.stop(t + 0.24);
         };
-
-        makePip(0);     // erster Piep
-        makePip(0.28);  // zweiter Piep nach kurzer Pause
+        makePip(0);
+        makePip(0.28);
       } catch (e) { console.warn('audio', e); }
     }, []);
 
-    // Doppeltes "Klock" für die 10s-Warnung (Holzblock-artig)
+    // Doppel-Klock für 10s-Warnung
     const playBeep = useCallback(() => {
       try {
         const ctx = getCtx();
         const now = ctx.currentTime;
-
-        const makeKlock = (startOffset) => {
-          const t = now + startOffset;
-
-          // Tonaler Anteil: kurzer Sinus mit schnellem Pitch-Drop -> "Klock"-Charakter
+        const makeKlock = (off) => {
+          const t = now + off;
           const osc = ctx.createOscillator();
           osc.type = 'sine';
           osc.frequency.setValueAtTime(900, t);
           osc.frequency.exponentialRampToValueAtTime(380, t + 0.04);
-
-          const oscGain = ctx.createGain();
-          oscGain.gain.setValueAtTime(0.0001, t);
-          oscGain.gain.exponentialRampToValueAtTime(0.6, t + 0.003);
-          oscGain.gain.exponentialRampToValueAtTime(0.0001, t + 0.08);
-
-          osc.connect(oscGain);
-          oscGain.connect(ctx.destination);
+          const og = ctx.createGain();
+          og.gain.setValueAtTime(0.0001, t);
+          og.gain.exponentialRampToValueAtTime(0.6, t + 0.003);
+          og.gain.exponentialRampToValueAtTime(0.0001, t + 0.08);
+          osc.connect(og);
+          og.connect(ctx.destination);
           osc.start(t);
           osc.stop(t + 0.1);
 
-          // Noise-Transient für das "Klick" am Anschlag
           const noiseLen = 0.03;
           const buf = ctx.createBuffer(1, ctx.sampleRate * noiseLen, ctx.sampleRate);
           const data = buf.getChannelData(0);
-          for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1);
+          for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
           const noise = ctx.createBufferSource();
           noise.buffer = buf;
-
           const bp = ctx.createBiquadFilter();
           bp.type = 'bandpass';
           bp.frequency.value = 2200;
           bp.Q.value = 1.5;
-
-          const noiseGain = ctx.createGain();
-          noiseGain.gain.setValueAtTime(0.0001, t);
-          noiseGain.gain.exponentialRampToValueAtTime(0.35, t + 0.002);
-          noiseGain.gain.exponentialRampToValueAtTime(0.0001, t + 0.025);
-
-          noise.connect(bp);
-          bp.connect(noiseGain);
-          noiseGain.connect(ctx.destination);
-          noise.start(t);
-          noise.stop(t + noiseLen);
+          const ng = ctx.createGain();
+          ng.gain.setValueAtTime(0.0001, t);
+          ng.gain.exponentialRampToValueAtTime(0.35, t + 0.002);
+          ng.gain.exponentialRampToValueAtTime(0.0001, t + 0.025);
+          noise.connect(bp); bp.connect(ng); ng.connect(ctx.destination);
+          noise.start(t); noise.stop(t + noiseLen);
         };
-
         makeKlock(0);
         makeKlock(0.13);
       } catch (e) { console.warn('audio', e); }
     }, []);
 
-    return { playGong, playBeep, prime: getCtx };
+    return { playGong, playBeep, prime: getCtx, startSilentKeepAlive };
   }
 
-  // ---- Stepper für 10er-Schritte ----
-  function Stepper({ value, onChange, min, max, disabled }) {
+  // ---- WAKE LOCK ----
+  function useWakeLock(active) {
+    const lockRef = useRef(null);
+    const [supported, setSupported] = useState(false);
+    const [held, setHeld] = useState(false);
+
+    useEffect(() => {
+      setSupported('wakeLock' in navigator);
+    }, []);
+
+    useEffect(() => {
+      if (!('wakeLock' in navigator)) return;
+
+      const acquire = async () => {
+        try {
+          lockRef.current = await navigator.wakeLock.request('screen');
+          setHeld(true);
+          lockRef.current.addEventListener('release', () => setHeld(false));
+        } catch (e) { /* user might deny */ }
+      };
+      const release = async () => {
+        try {
+          if (lockRef.current) {
+            await lockRef.current.release();
+            lockRef.current = null;
+            setHeld(false);
+          }
+        } catch (e) {}
+      };
+
+      if (active) acquire(); else release();
+
+      // Re-acquire bei Tab-Rückkehr
+      const onVis = () => {
+        if (active && document.visibilityState === 'visible') acquire();
+      };
+      document.addEventListener('visibilitychange', onVis);
+      return () => {
+        document.removeEventListener('visibilitychange', onVis);
+        release();
+      };
+    }, [active]);
+
+    return { supported, held };
+  }
+
+  // ---- HOLD-TO-REPEAT BUTTON ----
+  function HoldButton({ onPress, disabled, children, ariaLabel }) {
+    const intervalRef = useRef(null);
+    const timeoutRef = useRef(null);
+
+    const start = (e) => {
+      if (disabled) return;
+      e.preventDefault();
+      onPress();
+      // Erst nach 400ms: schnelles Wiederholen
+      timeoutRef.current = setTimeout(() => {
+        intervalRef.current = setInterval(onPress, 80);
+      }, 400);
+    };
+    const stop = () => {
+      clearTimeout(timeoutRef.current);
+      clearInterval(intervalRef.current);
+      timeoutRef.current = null;
+      intervalRef.current = null;
+    };
+    useEffect(() => () => stop(), []);
+
+    return (
+      <button
+        onPointerDown={start}
+        onPointerUp={stop}
+        onPointerLeave={stop}
+        onPointerCancel={stop}
+        disabled={disabled}
+        aria-label={ariaLabel}
+      >{children}</button>
+    );
+  }
+
+  // ---- STEPPER ----
+  function Stepper({ value, onChange, min, max, disabled, step = 10 }) {
     const fmt = (s) => {
       const m = Math.floor(s / 60);
       const sec = s % 60;
@@ -470,15 +641,35 @@
     };
     return (
       <div className="stepper">
-        <button
-          onClick={() => onChange(Math.max(min, value - 10))}
+        <HoldButton
+          onPress={() => onChange(Math.max(min, value - step))}
           disabled={disabled || value <= min}
-          aria-label="-10s">–</button>
+          ariaLabel={`-${step}`}
+        >–</HoldButton>
         <div className="value">{fmt(value)}</div>
-        <button
-          onClick={() => onChange(Math.min(max, value + 10))}
+        <HoldButton
+          onPress={() => onChange(Math.min(max, value + step))}
           disabled={disabled || value >= max}
-          aria-label="+10s">+</button>
+          ariaLabel={`+${step}`}
+        >+</HoldButton>
+      </div>
+    );
+  }
+
+  function CountStepper({ value, onChange, min, max, disabled }) {
+    return (
+      <div className="stepper">
+        <HoldButton
+          onPress={() => onChange(Math.max(min, value - 1))}
+          disabled={disabled || value <= min}
+          ariaLabel="-1"
+        >–</HoldButton>
+        <div className="value">{value}</div>
+        <HoldButton
+          onPress={() => onChange(Math.min(max, value + 1))}
+          disabled={disabled || value >= max}
+          ariaLabel="+1"
+        >+</HoldButton>
       </div>
     );
   }
@@ -494,110 +685,166 @@
     );
   }
 
-  // ---- Hauptkomponente ----
-  function App() {
-    const [rounds, setRounds] = useState(3);
-    const [roundSec, setRoundSec] = useState(180); // 3:00
-    const [restSec, setRestSec] = useState(60);    // 1:00
-    const [warn10, setWarn10] = useState(true);
+  // ---- LOCAL STORAGE ----
+  const STORAGE_KEY = 'boxing-timer-settings-v1';
+  const loadSettings = () => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    return null;
+  };
+  const saveSettings = (s) => {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); } catch (e) {}
+  };
 
-    const [phase, setPhase] = useState('idle'); // idle | round | rest | done
+  // ---- HAUPTKOMPONENTE ----
+  function App() {
+    const saved = loadSettings();
+    const [rounds, setRounds] = useState(saved?.rounds ?? 3);
+    const [roundSec, setRoundSec] = useState(saved?.roundSec ?? 180);
+    const [restSec, setRestSec] = useState(saved?.restSec ?? 60);
+    const [warn10, setWarn10] = useState(saved?.warn10 ?? true);
+
+    const [phase, setPhase] = useState('idle');
     const [currentRound, setCurrentRound] = useState(1);
     const [remaining, setRemaining] = useState(180);
     const [running, setRunning] = useState(false);
+    const [primed, setPrimed] = useState(false);
 
-    const lastWarnedRef = useRef({ phase: null, round: null });
+    const lastWarnedRef = useRef(null);
     const tickRef = useRef(null);
-    const { playGong, playBeep, prime } = useAudio();
+    const targetEndRef = useRef(null); // Wall-Clock-Ziel für drift-freie Zeit
 
-    // Beim Stoppen: Anzeige an Settings angleichen
+    const { playGong, playBeep, prime, startSilentKeepAlive } = useAudio();
+    const wakeLock = useWakeLock(running);
+
+    // Settings persistieren
+    useEffect(() => {
+      saveSettings({ rounds, roundSec, restSec, warn10 });
+    }, [rounds, roundSec, restSec, warn10]);
+
+    // Im Idle: Anzeige an Settings angleichen
     useEffect(() => {
       if (phase === 'idle') setRemaining(roundSec);
     }, [roundSec, phase]);
 
-    // Tick
+    useEffect(() => {
+      if (rounds < currentRound && phase === 'idle') setCurrentRound(1);
+    }, [rounds, currentRound, phase]);
+
+    // ---- DRIFT-FREIER TICKER (basiert auf wall-clock target) ----
     useEffect(() => {
       if (!running) return;
-      tickRef.current = setInterval(() => {
-        setRemaining((r) => r - 1);
-      }, 1000);
-      return () => clearInterval(tickRef.current);
+
+      const tick = () => {
+        if (targetEndRef.current == null) return;
+        const msLeft = targetEndRef.current - Date.now();
+        const secLeft = Math.ceil(msLeft / 1000);
+        setRemaining(secLeft);
+      };
+      tick();
+      tickRef.current = setInterval(tick, 200); // 5x/Sek -> reagiert nach Sleep schnell
+
+      // Bei Tab-Rückkehr sofort neu syncen
+      const onVis = () => { if (document.visibilityState === 'visible') tick(); };
+      document.addEventListener('visibilitychange', onVis);
+
+      return () => {
+        clearInterval(tickRef.current);
+        document.removeEventListener('visibilitychange', onVis);
+      };
     }, [running]);
 
-    // Phasen-Logik
+    // Phasenwechsel und Signale
     useEffect(() => {
       if (!running) return;
 
-      // 10-Sekunden-Warnung in der Round-Phase
       if (
         warn10 &&
         phase === 'round' &&
         remaining === 10 &&
-        lastWarnedRef.current.round !== currentRound
+        lastWarnedRef.current !== currentRound
       ) {
-        lastWarnedRef.current.round = currentRound;
+        lastWarnedRef.current = currentRound;
         playBeep();
       }
 
-      if (remaining < 0) {
+      if (remaining <= 0) {
         if (phase === 'round') {
-          // Runde vorbei -> Gong
           playGong();
           if (currentRound >= rounds) {
             setPhase('done');
             setRunning(false);
+            targetEndRef.current = null;
             setRemaining(0);
           } else {
             setPhase('rest');
-            setRemaining(restSec);
+            const dur = restSec;
+            targetEndRef.current = Date.now() + dur * 1000;
+            setRemaining(dur);
           }
         } else if (phase === 'rest') {
-          // Pause vorbei -> neue Runde -> Gong
           playGong();
           setCurrentRound((r) => r + 1);
           setPhase('round');
-          setRemaining(roundSec);
-          lastWarnedRef.current.round = null;
+          const dur = roundSec;
+          targetEndRef.current = Date.now() + dur * 1000;
+          setRemaining(dur);
+          lastWarnedRef.current = null;
         }
       }
     }, [remaining, running, phase, currentRound, rounds, roundSec, restSec, warn10, playGong, playBeep]);
 
+    const handlePrime = () => {
+      prime();
+      startSilentKeepAlive();
+      // Kurz einen leisen Test-Sample triggern, damit iOS den Output freigibt
+      playBeep();
+      setPrimed(true);
+    };
+
     const start = () => {
-      prime(); // AudioContext freischalten (User-Gesture)
+      prime();
+      startSilentKeepAlive();
       if (phase === 'idle' || phase === 'done') {
         setCurrentRound(1);
         setPhase('round');
-        setRemaining(roundSec);
-        lastWarnedRef.current.round = null;
+        const dur = roundSec;
+        targetEndRef.current = Date.now() + dur * 1000;
+        setRemaining(dur);
+        lastWarnedRef.current = null;
         setRunning(true);
-        // Start-Gong
         setTimeout(() => playGong(), 30);
       } else {
+        // Resume
+        targetEndRef.current = Date.now() + remaining * 1000;
         setRunning(true);
       }
     };
-    const pause = () => setRunning(false);
+
+    const pause = () => {
+      setRunning(false);
+      targetEndRef.current = null;
+    };
+
     const reset = () => {
       setRunning(false);
       setPhase('idle');
       setCurrentRound(1);
       setRemaining(roundSec);
-      lastWarnedRef.current = { phase: null, round: null };
+      targetEndRef.current = null;
+      lastWarnedRef.current = null;
     };
 
     const fmt = (s) => {
-      const m = Math.floor(Math.max(0, s) / 60);
-      const sec = Math.max(0, s) % 60;
+      const v = Math.max(0, s);
+      const m = Math.floor(v / 60);
+      const sec = v % 60;
       return `${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
     };
 
     const settingsLocked = phase !== 'idle';
-
-    // Sicherstellen, dass currentRound nicht > rounds wenn man rounds zur Laufzeit ändert
-    useEffect(() => {
-      if (rounds < currentRound && phase === 'idle') setCurrentRound(1);
-    }, [rounds, currentRound, phase]);
-
     const total = phase === 'rest' ? restSec : roundSec;
     const progress = total > 0 ? Math.max(0, Math.min(1, remaining / total)) : 0;
 
@@ -619,134 +866,127 @@
       isWarn ? 'warn' : '';
 
     return (
-      <div className="app">
-        <header className="hdr">
-          <div className="brand">
-            <div className="logo"><span>BX</span></div>
-            <div>
-              <div className="title">BOXING TIMER</div>
-              <div className="subtitle">EST. ROUND ONE</div>
+      <>
+        {!primed && (
+          <div className="primer">
+            <div className="primer-card">
+              <h3>BEREIT?</h3>
+              <p><strong>Lautstärke aufdrehen.</strong></p>
+              <p>iPhone-Stummschalter prüfen (Schalter oben muss aus sein).</p>
+              <p>Während des Trainings bleibt das Display an.</p>
+              <button onClick={handlePrime}>SOUND AKTIVIEREN</button>
             </div>
           </div>
-          <div className="meta">
-            <div>RND <b>{rounds}</b> × {fmt(roundSec)}</div>
-            <div>REST <b>{fmt(restSec)}</b></div>
-          </div>
-        </header>
+        )}
 
-        <div className={`phase-banner ${bannerCls}`}>
-          <div className="phase-label">{phaseLabel}</div>
-          <div className="round-counter">
-            <b>{Math.min(currentRound, rounds)}</b> / {rounds}
-          </div>
-        </div>
+        <div className="app">
+          <header className="hdr">
+            <div className="brand">
+              <div className="logo"><span>BX</span></div>
+              <div>
+                <div className="title">BOXING TIMER</div>
+                <div className="subtitle">EST. ROUND ONE</div>
+              </div>
+            </div>
+            <div className="meta">
+              <div>RND <b>{rounds}</b> × {fmt(roundSec)}</div>
+              <div>REST <b>{fmt(restSec)}</b></div>
+            </div>
+          </header>
 
-        <div className="display">
-          <div className="corner tl"></div>
-          <div className="corner tr"></div>
-          <div className="corner bl"></div>
-          <div className="corner br"></div>
-          <div className={`timer ${timerCls}`}>{fmt(remaining)}</div>
-          <div className="progress">
-            <div
-              className={`progress-bar ${phase === 'rest' ? 'rest' : ''}`}
-              style={{ transform: `scaleX(${progress})` }}
-            />
+          <div className={`phase-banner ${bannerCls}`}>
+            <div className="phase-label">{phaseLabel}</div>
+            <div className="round-counter">
+              <b>{Math.min(currentRound, rounds)}</b> / {rounds}
+            </div>
           </div>
-        </div>
 
-        <div className="controls">
+          <div className="display">
+            <div className="corner tl"></div>
+            <div className="corner tr"></div>
+            <div className="corner bl"></div>
+            <div className="corner br"></div>
+            <div className={`timer ${timerCls}`}>{fmt(remaining)}</div>
+            <div className="progress">
+              <div
+                className={`progress-bar ${phase === 'rest' ? 'rest' : ''}`}
+                style={{ transform: `scaleX(${progress})` }}
+              />
+            </div>
+          </div>
+
           {!running ? (
-            <button className="btn primary" onClick={start}>
+            <button className="primary-action" onClick={start}>
               {phase === 'idle' || phase === 'done' ? '► START' : '► RESUME'}
             </button>
           ) : (
-            <button className="btn primary" onClick={pause}>❚❚ PAUSE</button>
+            <button className="primary-action pause" onClick={pause}>❚❚ PAUSE</button>
           )}
-          <button className="btn ghost" onClick={reset} disabled={phase === 'idle' && !running}>
-            ↺ RESET
-          </button>
-          <button
-            className="btn ghost"
-            onClick={() => playGong()}
-            title="Gong testen"
-          >
-            ♪ TEST
-          </button>
-        </div>
-
-        <div className="settings-title">
-          <span className="num">01</span>
-          <h2>EINSTELLUNGEN</h2>
-          <div className="line"></div>
-        </div>
-
-        <div className={`setting-card ${settingsLocked ? 'disabled' : ''}`}>
-          <div className="setting-info">
-            <div className="setting-label">Anzahl Runden</div>
-            <div className="setting-hint">1 — 99</div>
+          <div className="secondary">
+            <button className="btn" onClick={reset} disabled={phase === 'idle' && !running}>↺ RESET</button>
+            <button className="btn" onClick={() => playGong()}>♪ TEST GONG</button>
           </div>
-          <div className="stepper">
-            <button onClick={() => setRounds(Math.max(1, rounds - 1))} disabled={settingsLocked || rounds <= 1}>–</button>
-            <div className="value">{rounds}</div>
-            <button onClick={() => setRounds(Math.min(99, rounds + 1))} disabled={settingsLocked || rounds >= 99}>+</button>
-          </div>
-        </div>
 
-        <div className={`setting-card ${settingsLocked ? 'disabled' : ''}`}>
-          <div className="setting-info">
-            <div className="setting-label">Rundenlänge</div>
-            <div className="setting-hint">10s-Schritte • min 0:10 • max 30:00</div>
+          <div className="settings-title">
+            <span className="num">01</span>
+            <h2>EINSTELLUNGEN</h2>
+            <div className="line"></div>
           </div>
-          <Stepper
-            value={roundSec}
-            onChange={setRoundSec}
-            min={10}
-            max={1800}
-            disabled={settingsLocked}
-          />
-        </div>
 
-        <div className={`setting-card ${settingsLocked ? 'disabled' : ''}`}>
-          <div className="setting-info">
-            <div className="setting-label">Pausenlänge</div>
-            <div className="setting-hint">10s-Schritte • min 0:10 • max 10:00</div>
+          <div className={`setting-card ${settingsLocked ? 'disabled' : ''}`}>
+            <div className="setting-info">
+              <div className="setting-label">Anzahl Runden</div>
+              <div className="setting-hint">1 — 99 • Halten für schnell</div>
+            </div>
+            <CountStepper
+              value={rounds}
+              onChange={setRounds}
+              min={1} max={99}
+              disabled={settingsLocked}
+            />
           </div>
-          <Stepper
-            value={restSec}
-            onChange={setRestSec}
-            min={10}
-            max={600}
-            disabled={settingsLocked}
-          />
-        </div>
 
-        <div className="setting-card">
-          <div className="setting-info">
-            <div className="setting-label">10-Sekunden-Signal</div>
-            <div className="setting-hint">Doppel-Klock 10s vor Rundenende</div>
+          <div className={`setting-card ${settingsLocked ? 'disabled' : ''}`}>
+            <div className="setting-info">
+              <div className="setting-label">Rundenlänge</div>
+              <div className="setting-hint">10s-Schritte • 0:10 — 30:00</div>
+            </div>
+            <Stepper value={roundSec} onChange={setRoundSec} min={10} max={1800} disabled={settingsLocked} />
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <button
-              className="btn ghost"
-              style={{ padding: '8px 12px', fontSize: '13px', letterSpacing: '2px' }}
-              onClick={() => playBeep()}
-              title="Klock testen"
-            >♪ TEST</button>
-            <Toggle on={warn10} onChange={setWarn10} />
+
+          <div className={`setting-card ${settingsLocked ? 'disabled' : ''}`}>
+            <div className="setting-info">
+              <div className="setting-label">Pausenlänge</div>
+              <div className="setting-hint">10s-Schritte • 0:10 — 10:00</div>
+            </div>
+            <Stepper value={restSec} onChange={setRestSec} min={10} max={600} disabled={settingsLocked} />
+          </div>
+
+          <div className="setting-card">
+            <div className="setting-info">
+              <div className="setting-label">10-Sekunden-Signal</div>
+              <div className="setting-hint">Doppel-Klock 10s vor Rundenende</div>
+            </div>
+            <div className="signal-row">
+              <button className="test-btn" onClick={() => playBeep()}>♪ TEST</button>
+              <Toggle on={warn10} onChange={setWarn10} />
+            </div>
+          </div>
+
+          <div className="footer">
+            ROUND ONE · FIGHT · {phase === 'idle' ? 'READY' : phase.toUpperCase()}
+            {wakeLock.supported && (
+              <span className={`wake ${wakeLock.held ? 'on' : ''}`}>
+                {wakeLock.held ? '● DISPLAY AN' : '○ DISPLAY'}
+              </span>
+            )}
           </div>
         </div>
-
-        <div className="footer">
-          ROUND ONE · FIGHT · {phase === 'idle' ? 'READY TO GO' : phase.toUpperCase()}
-        </div>
-      </div>
+      </>
     );
   }
 
   ReactDOM.createRoot(document.getElementById('root')).render(<App />);
 </script>
-
-<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</body>
+</html>
