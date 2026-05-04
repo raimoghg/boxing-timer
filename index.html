@@ -1,0 +1,752 @@
+<div id="root"></div>
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@400;700;800&family=Oswald:wght@300;500;700&display=swap');
+
+  :root {
+    --bg: #0a0a0a;
+    --surface: #141414;
+    --surface-2: #1c1c1c;
+    --line: #2a2a2a;
+    --ink: #f5f1e8;
+    --muted: #6a6a6a;
+    --red: #e63946;
+    --red-deep: #9d2128;
+    --gold: #d4a24c;
+    --green: #4ade80;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Oswald', sans-serif;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  body {
+    background-image:
+      radial-gradient(circle at 20% 0%, rgba(230, 57, 70, 0.08), transparent 50%),
+      radial-gradient(circle at 80% 100%, rgba(212, 162, 76, 0.05), transparent 50%);
+    background-attachment: fixed;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.04 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    pointer-events: none;
+    opacity: 0.5;
+    z-index: 1;
+  }
+
+  .app {
+    position: relative;
+    z-index: 2;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 32px 20px 48px;
+  }
+
+  /* HEADER */
+  .hdr {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 2px solid var(--line);
+    padding-bottom: 18px;
+    margin-bottom: 28px;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .logo {
+    width: 44px;
+    height: 44px;
+    border: 2px solid var(--red);
+    display: grid;
+    place-items: center;
+    transform: rotate(-4deg);
+    background: linear-gradient(135deg, var(--red-deep), var(--red));
+    box-shadow: 0 0 24px rgba(230, 57, 70, 0.35);
+  }
+  .logo span {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 24px;
+    letter-spacing: 1px;
+    color: white;
+  }
+  .title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 30px;
+    letter-spacing: 4px;
+    line-height: 1;
+  }
+  .subtitle {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+  .meta {
+    text-align: right;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+    line-height: 1.6;
+  }
+  .meta b { color: var(--gold); font-weight: 700; }
+
+  /* PHASE BANNER */
+  .phase-banner {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-left: 6px solid var(--red);
+    padding: 14px 20px;
+    margin-bottom: 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: border-color 0.3s, background 0.3s;
+  }
+  .phase-banner.rest { border-left-color: var(--gold); }
+  .phase-banner.done { border-left-color: var(--green); }
+  .phase-banner.warn {
+    border-left-color: var(--red);
+    animation: pulse 1s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { background: var(--surface); }
+    50% { background: rgba(230, 57, 70, 0.15); }
+  }
+  .phase-label {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 3px;
+  }
+  .round-counter {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    color: var(--muted);
+    letter-spacing: 2px;
+  }
+  .round-counter b { color: var(--ink); font-weight: 800; }
+
+  /* TIMER DISPLAY */
+  .display {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    padding: 38px 20px 32px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 24px;
+  }
+  .display::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--red), transparent);
+  }
+  .display .corner {
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    border-color: var(--muted);
+  }
+  .display .corner.tl { top: 8px; left: 8px; border-top: 2px solid; border-left: 2px solid; }
+  .display .corner.tr { top: 8px; right: 8px; border-top: 2px solid; border-right: 2px solid; }
+  .display .corner.bl { bottom: 8px; left: 8px; border-bottom: 2px solid; border-left: 2px solid; }
+  .display .corner.br { bottom: 8px; right: 8px; border-bottom: 2px solid; border-right: 2px solid; }
+
+  .timer {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 800;
+    font-size: clamp(96px, 22vw, 180px);
+    letter-spacing: -4px;
+    line-height: 1;
+    color: var(--ink);
+    text-shadow: 0 0 40px rgba(245, 241, 232, 0.1);
+    transition: color 0.2s;
+  }
+  .timer.warn { color: var(--red); text-shadow: 0 0 60px rgba(230, 57, 70, 0.5); }
+  .timer.rest { color: var(--gold); }
+  .timer.done { color: var(--green); }
+
+  .progress {
+    height: 4px;
+    background: var(--surface-2);
+    margin-top: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .progress-bar {
+    position: absolute;
+    inset: 0;
+    background: var(--red);
+    transform-origin: left;
+    transition: transform 0.2s linear, background 0.3s;
+  }
+  .progress-bar.rest { background: var(--gold); }
+
+  /* CONTROLS */
+  .controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 32px;
+  }
+  .btn {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    color: var(--ink);
+    padding: 18px 12px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 3px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .btn:hover { border-color: var(--ink); transform: translateY(-1px); }
+  .btn:active { transform: translateY(0); }
+  .btn.primary {
+    background: var(--red);
+    border-color: var(--red);
+    color: white;
+    box-shadow: 0 0 24px rgba(230, 57, 70, 0.3);
+  }
+  .btn.primary:hover { background: var(--red-deep); border-color: var(--red-deep); }
+  .btn.ghost { background: transparent; }
+  .btn:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
+
+  /* SETTINGS */
+  .settings-title {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 18px;
+    margin-top: 8px;
+  }
+  .settings-title h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 4px;
+  }
+  .settings-title .line {
+    flex: 1;
+    height: 1px;
+    background: var(--line);
+  }
+  .settings-title .num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 2px;
+  }
+
+  .setting-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    padding: 18px 20px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .setting-card.disabled { opacity: 0.4; pointer-events: none; }
+
+  .setting-info { flex: 1; min-width: 0; }
+  .setting-label {
+    font-family: 'Oswald', sans-serif;
+    font-weight: 500;
+    font-size: 13px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--ink);
+    margin-bottom: 2px;
+  }
+  .setting-hint {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 1px;
+  }
+
+  .stepper {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    padding: 4px;
+  }
+  .stepper button {
+    width: 38px;
+    height: 38px;
+    background: transparent;
+    border: none;
+    color: var(--ink);
+    font-size: 22px;
+    font-family: 'Bebas Neue', sans-serif;
+    cursor: pointer;
+    transition: background 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .stepper button:hover:not(:disabled) { background: var(--surface-2); color: var(--red); }
+  .stepper button:disabled { opacity: 0.3; cursor: not-allowed; }
+  .stepper .value {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 800;
+    font-size: 18px;
+    min-width: 78px;
+    text-align: center;
+    letter-spacing: 1px;
+  }
+
+  /* TOGGLE */
+  .toggle {
+    position: relative;
+    width: 56px;
+    height: 30px;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+    flex-shrink: 0;
+  }
+  .toggle::after {
+    content: '';
+    position: absolute;
+    top: 3px; left: 3px;
+    width: 22px;
+    height: 22px;
+    background: var(--muted);
+    transition: transform 0.2s, background 0.2s;
+  }
+  .toggle.on { border-color: var(--red); }
+  .toggle.on::after { transform: translateX(26px); background: var(--red); }
+
+  /* FOOTER */
+  .footer {
+    margin-top: 32px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-align: center;
+    text-transform: uppercase;
+  }
+
+  @media (max-width: 480px) {
+    .controls { grid-template-columns: 1fr; }
+    .meta { font-size: 9px; }
+    .title { font-size: 24px; }
+    .stepper .value { min-width: 64px; font-size: 16px; }
+    .stepper button { width: 34px; height: 34px; }
+  }
+</style>
+
+<script type="text/babel">
+  const { useState, useEffect, useRef, useCallback } = React;
+
+  // ---- Audio helpers (WebAudio, kein externes Asset) ----
+  function useAudio() {
+    const ctxRef = useRef(null);
+    const getCtx = () => {
+      if (!ctxRef.current) {
+        ctxRef.current = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (ctxRef.current.state === 'suspended') ctxRef.current.resume();
+      return ctxRef.current;
+    };
+
+    // Doppel-Pieps für Rundenstart und Rundenende (zwei kurze hohe Töne)
+    const playGong = useCallback(() => {
+      try {
+        const ctx = getCtx();
+        const now = ctx.currentTime;
+
+        const makePip = (startOffset) => {
+          const t = now + startOffset;
+          const osc = ctx.createOscillator();
+          const g = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.value = 1760; // hoch & durchdringend (A6)
+          g.gain.setValueAtTime(0.0001, t);
+          g.gain.exponentialRampToValueAtTime(0.5, t + 0.008);
+          g.gain.setValueAtTime(0.5, t + 0.18);
+          g.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
+          osc.connect(g);
+          g.connect(ctx.destination);
+          osc.start(t);
+          osc.stop(t + 0.24);
+        };
+
+        makePip(0);     // erster Piep
+        makePip(0.28);  // zweiter Piep nach kurzer Pause
+      } catch (e) { console.warn('audio', e); }
+    }, []);
+
+    // Doppeltes "Klock" für die 10s-Warnung (Holzblock-artig)
+    const playBeep = useCallback(() => {
+      try {
+        const ctx = getCtx();
+        const now = ctx.currentTime;
+
+        const makeKlock = (startOffset) => {
+          const t = now + startOffset;
+
+          // Tonaler Anteil: kurzer Sinus mit schnellem Pitch-Drop -> "Klock"-Charakter
+          const osc = ctx.createOscillator();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(900, t);
+          osc.frequency.exponentialRampToValueAtTime(380, t + 0.04);
+
+          const oscGain = ctx.createGain();
+          oscGain.gain.setValueAtTime(0.0001, t);
+          oscGain.gain.exponentialRampToValueAtTime(0.6, t + 0.003);
+          oscGain.gain.exponentialRampToValueAtTime(0.0001, t + 0.08);
+
+          osc.connect(oscGain);
+          oscGain.connect(ctx.destination);
+          osc.start(t);
+          osc.stop(t + 0.1);
+
+          // Noise-Transient für das "Klick" am Anschlag
+          const noiseLen = 0.03;
+          const buf = ctx.createBuffer(1, ctx.sampleRate * noiseLen, ctx.sampleRate);
+          const data = buf.getChannelData(0);
+          for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1);
+          const noise = ctx.createBufferSource();
+          noise.buffer = buf;
+
+          const bp = ctx.createBiquadFilter();
+          bp.type = 'bandpass';
+          bp.frequency.value = 2200;
+          bp.Q.value = 1.5;
+
+          const noiseGain = ctx.createGain();
+          noiseGain.gain.setValueAtTime(0.0001, t);
+          noiseGain.gain.exponentialRampToValueAtTime(0.35, t + 0.002);
+          noiseGain.gain.exponentialRampToValueAtTime(0.0001, t + 0.025);
+
+          noise.connect(bp);
+          bp.connect(noiseGain);
+          noiseGain.connect(ctx.destination);
+          noise.start(t);
+          noise.stop(t + noiseLen);
+        };
+
+        makeKlock(0);
+        makeKlock(0.13);
+      } catch (e) { console.warn('audio', e); }
+    }, []);
+
+    return { playGong, playBeep, prime: getCtx };
+  }
+
+  // ---- Stepper für 10er-Schritte ----
+  function Stepper({ value, onChange, min, max, disabled }) {
+    const fmt = (s) => {
+      const m = Math.floor(s / 60);
+      const sec = s % 60;
+      return `${m}:${String(sec).padStart(2, '0')}`;
+    };
+    return (
+      <div className="stepper">
+        <button
+          onClick={() => onChange(Math.max(min, value - 10))}
+          disabled={disabled || value <= min}
+          aria-label="-10s">–</button>
+        <div className="value">{fmt(value)}</div>
+        <button
+          onClick={() => onChange(Math.min(max, value + 10))}
+          disabled={disabled || value >= max}
+          aria-label="+10s">+</button>
+      </div>
+    );
+  }
+
+  function Toggle({ on, onChange, disabled }) {
+    return (
+      <div
+        className={`toggle ${on ? 'on' : ''}`}
+        onClick={() => !disabled && onChange(!on)}
+        role="switch"
+        aria-checked={on}
+      />
+    );
+  }
+
+  // ---- Hauptkomponente ----
+  function App() {
+    const [rounds, setRounds] = useState(3);
+    const [roundSec, setRoundSec] = useState(180); // 3:00
+    const [restSec, setRestSec] = useState(60);    // 1:00
+    const [warn10, setWarn10] = useState(true);
+
+    const [phase, setPhase] = useState('idle'); // idle | round | rest | done
+    const [currentRound, setCurrentRound] = useState(1);
+    const [remaining, setRemaining] = useState(180);
+    const [running, setRunning] = useState(false);
+
+    const lastWarnedRef = useRef({ phase: null, round: null });
+    const tickRef = useRef(null);
+    const { playGong, playBeep, prime } = useAudio();
+
+    // Beim Stoppen: Anzeige an Settings angleichen
+    useEffect(() => {
+      if (phase === 'idle') setRemaining(roundSec);
+    }, [roundSec, phase]);
+
+    // Tick
+    useEffect(() => {
+      if (!running) return;
+      tickRef.current = setInterval(() => {
+        setRemaining((r) => r - 1);
+      }, 1000);
+      return () => clearInterval(tickRef.current);
+    }, [running]);
+
+    // Phasen-Logik
+    useEffect(() => {
+      if (!running) return;
+
+      // 10-Sekunden-Warnung in der Round-Phase
+      if (
+        warn10 &&
+        phase === 'round' &&
+        remaining === 10 &&
+        lastWarnedRef.current.round !== currentRound
+      ) {
+        lastWarnedRef.current.round = currentRound;
+        playBeep();
+      }
+
+      if (remaining < 0) {
+        if (phase === 'round') {
+          // Runde vorbei -> Gong
+          playGong();
+          if (currentRound >= rounds) {
+            setPhase('done');
+            setRunning(false);
+            setRemaining(0);
+          } else {
+            setPhase('rest');
+            setRemaining(restSec);
+          }
+        } else if (phase === 'rest') {
+          // Pause vorbei -> neue Runde -> Gong
+          playGong();
+          setCurrentRound((r) => r + 1);
+          setPhase('round');
+          setRemaining(roundSec);
+          lastWarnedRef.current.round = null;
+        }
+      }
+    }, [remaining, running, phase, currentRound, rounds, roundSec, restSec, warn10, playGong, playBeep]);
+
+    const start = () => {
+      prime(); // AudioContext freischalten (User-Gesture)
+      if (phase === 'idle' || phase === 'done') {
+        setCurrentRound(1);
+        setPhase('round');
+        setRemaining(roundSec);
+        lastWarnedRef.current.round = null;
+        setRunning(true);
+        // Start-Gong
+        setTimeout(() => playGong(), 30);
+      } else {
+        setRunning(true);
+      }
+    };
+    const pause = () => setRunning(false);
+    const reset = () => {
+      setRunning(false);
+      setPhase('idle');
+      setCurrentRound(1);
+      setRemaining(roundSec);
+      lastWarnedRef.current = { phase: null, round: null };
+    };
+
+    const fmt = (s) => {
+      const m = Math.floor(Math.max(0, s) / 60);
+      const sec = Math.max(0, s) % 60;
+      return `${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+    };
+
+    const settingsLocked = phase !== 'idle';
+
+    // Sicherstellen, dass currentRound nicht > rounds wenn man rounds zur Laufzeit ändert
+    useEffect(() => {
+      if (rounds < currentRound && phase === 'idle') setCurrentRound(1);
+    }, [rounds, currentRound, phase]);
+
+    const total = phase === 'rest' ? restSec : roundSec;
+    const progress = total > 0 ? Math.max(0, Math.min(1, remaining / total)) : 0;
+
+    const phaseLabel = {
+      idle: 'BEREIT',
+      round: `RUNDE ${currentRound}`,
+      rest: 'PAUSE',
+      done: 'TRAINING BEENDET',
+    }[phase];
+
+    const isWarn = phase === 'round' && remaining <= 10 && remaining > 0 && running;
+    const bannerCls =
+      phase === 'rest' ? 'rest' :
+      phase === 'done' ? 'done' :
+      isWarn ? 'warn' : '';
+    const timerCls =
+      phase === 'rest' ? 'rest' :
+      phase === 'done' ? 'done' :
+      isWarn ? 'warn' : '';
+
+    return (
+      <div className="app">
+        <header className="hdr">
+          <div className="brand">
+            <div className="logo"><span>BX</span></div>
+            <div>
+              <div className="title">BOXING TIMER</div>
+              <div className="subtitle">EST. ROUND ONE</div>
+            </div>
+          </div>
+          <div className="meta">
+            <div>RND <b>{rounds}</b> × {fmt(roundSec)}</div>
+            <div>REST <b>{fmt(restSec)}</b></div>
+          </div>
+        </header>
+
+        <div className={`phase-banner ${bannerCls}`}>
+          <div className="phase-label">{phaseLabel}</div>
+          <div className="round-counter">
+            <b>{Math.min(currentRound, rounds)}</b> / {rounds}
+          </div>
+        </div>
+
+        <div className="display">
+          <div className="corner tl"></div>
+          <div className="corner tr"></div>
+          <div className="corner bl"></div>
+          <div className="corner br"></div>
+          <div className={`timer ${timerCls}`}>{fmt(remaining)}</div>
+          <div className="progress">
+            <div
+              className={`progress-bar ${phase === 'rest' ? 'rest' : ''}`}
+              style={{ transform: `scaleX(${progress})` }}
+            />
+          </div>
+        </div>
+
+        <div className="controls">
+          {!running ? (
+            <button className="btn primary" onClick={start}>
+              {phase === 'idle' || phase === 'done' ? '► START' : '► RESUME'}
+            </button>
+          ) : (
+            <button className="btn primary" onClick={pause}>❚❚ PAUSE</button>
+          )}
+          <button className="btn ghost" onClick={reset} disabled={phase === 'idle' && !running}>
+            ↺ RESET
+          </button>
+          <button
+            className="btn ghost"
+            onClick={() => playGong()}
+            title="Gong testen"
+          >
+            ♪ TEST
+          </button>
+        </div>
+
+        <div className="settings-title">
+          <span className="num">01</span>
+          <h2>EINSTELLUNGEN</h2>
+          <div className="line"></div>
+        </div>
+
+        <div className={`setting-card ${settingsLocked ? 'disabled' : ''}`}>
+          <div className="setting-info">
+            <div className="setting-label">Anzahl Runden</div>
+            <div className="setting-hint">1 — 99</div>
+          </div>
+          <div className="stepper">
+            <button onClick={() => setRounds(Math.max(1, rounds - 1))} disabled={settingsLocked || rounds <= 1}>–</button>
+            <div className="value">{rounds}</div>
+            <button onClick={() => setRounds(Math.min(99, rounds + 1))} disabled={settingsLocked || rounds >= 99}>+</button>
+          </div>
+        </div>
+
+        <div className={`setting-card ${settingsLocked ? 'disabled' : ''}`}>
+          <div className="setting-info">
+            <div className="setting-label">Rundenlänge</div>
+            <div className="setting-hint">10s-Schritte • min 0:10 • max 30:00</div>
+          </div>
+          <Stepper
+            value={roundSec}
+            onChange={setRoundSec}
+            min={10}
+            max={1800}
+            disabled={settingsLocked}
+          />
+        </div>
+
+        <div className={`setting-card ${settingsLocked ? 'disabled' : ''}`}>
+          <div className="setting-info">
+            <div className="setting-label">Pausenlänge</div>
+            <div className="setting-hint">10s-Schritte • min 0:10 • max 10:00</div>
+          </div>
+          <Stepper
+            value={restSec}
+            onChange={setRestSec}
+            min={10}
+            max={600}
+            disabled={settingsLocked}
+          />
+        </div>
+
+        <div className="setting-card">
+          <div className="setting-info">
+            <div className="setting-label">10-Sekunden-Signal</div>
+            <div className="setting-hint">Doppel-Klock 10s vor Rundenende</div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <button
+              className="btn ghost"
+              style={{ padding: '8px 12px', fontSize: '13px', letterSpacing: '2px' }}
+              onClick={() => playBeep()}
+              title="Klock testen"
+            >♪ TEST</button>
+            <Toggle on={warn10} onChange={setWarn10} />
+          </div>
+        </div>
+
+        <div className="footer">
+          ROUND ONE · FIGHT · {phase === 'idle' ? 'READY TO GO' : phase.toUpperCase()}
+        </div>
+      </div>
+    );
+  }
+
+  ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
