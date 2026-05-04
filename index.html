@@ -456,21 +456,43 @@
   function useAudio() {
     const ctxRef = useRef(null);
     const silentLoopRef = useRef(null);
+    const masterRef = useRef(null);
 
     const getCtx = () => {
       if (!ctxRef.current) {
-        ctxRef.current = new (window.AudioContext || window.webkitAudioContext)();
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        ctxRef.current = ctx;
+
+        // Master-Bus: Gain hoch, Limiter dahinter -> laut & sauber
+        const master = ctx.createGain();
+        master.gain.value = 2.4; // deutlich lauter
+
+        const limiter = ctx.createDynamicsCompressor();
+        limiter.threshold.value = -3;
+        limiter.knee.value = 0;
+        limiter.ratio.value = 20;
+        limiter.attack.value = 0.001;
+        limiter.release.value = 0.1;
+
+        master.connect(limiter);
+        limiter.connect(ctx.destination);
+        masterRef.current = master;
       }
       if (ctxRef.current.state === 'suspended') ctxRef.current.resume();
       return ctxRef.current;
     };
 
-    // Stiller Loop, hält den AudioContext auf iOS aktiv (verhindert "Audio bricht ab")
+    const getMaster = () => {
+      getCtx();
+      return masterRef.current;
+    };
+
+    // Stiller Loop, hält den AudioContext auf iOS aktiv
+    // (geht direkt an destination, nicht durch master, damit der Limiter nichts macht)
     const startSilentKeepAlive = () => {
       if (silentLoopRef.current) return;
       const ctx = getCtx();
       const buf = ctx.createBuffer(1, ctx.sampleRate * 1, ctx.sampleRate);
-      // alle Samples bleiben 0 -> stiller Buffer
       const src = ctx.createBufferSource();
       src.buffer = buf;
       src.loop = true;
@@ -486,6 +508,7 @@
     const playGong = useCallback(() => {
       try {
         const ctx = getCtx();
+        const master = getMaster();
         const now = ctx.currentTime;
         const makePip = (off) => {
           const t = now + off;
@@ -494,11 +517,11 @@
           osc.type = 'sine';
           osc.frequency.value = 1760;
           g.gain.setValueAtTime(0.0001, t);
-          g.gain.exponentialRampToValueAtTime(0.5, t + 0.008);
-          g.gain.setValueAtTime(0.5, t + 0.18);
+          g.gain.exponentialRampToValueAtTime(0.9, t + 0.008);
+          g.gain.setValueAtTime(0.9, t + 0.18);
           g.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
           osc.connect(g);
-          g.connect(ctx.destination);
+          g.connect(master);
           osc.start(t);
           osc.stop(t + 0.24);
         };
@@ -511,6 +534,7 @@
     const playBeep = useCallback(() => {
       try {
         const ctx = getCtx();
+        const master = getMaster();
         const now = ctx.currentTime;
         const makeKlock = (off) => {
           const t = now + off;
@@ -520,10 +544,10 @@
           osc.frequency.exponentialRampToValueAtTime(380, t + 0.04);
           const og = ctx.createGain();
           og.gain.setValueAtTime(0.0001, t);
-          og.gain.exponentialRampToValueAtTime(0.6, t + 0.003);
+          og.gain.exponentialRampToValueAtTime(1.0, t + 0.003);
           og.gain.exponentialRampToValueAtTime(0.0001, t + 0.08);
           osc.connect(og);
-          og.connect(ctx.destination);
+          og.connect(master);
           osc.start(t);
           osc.stop(t + 0.1);
 
@@ -539,9 +563,9 @@
           bp.Q.value = 1.5;
           const ng = ctx.createGain();
           ng.gain.setValueAtTime(0.0001, t);
-          ng.gain.exponentialRampToValueAtTime(0.35, t + 0.002);
+          ng.gain.exponentialRampToValueAtTime(0.6, t + 0.002);
           ng.gain.exponentialRampToValueAtTime(0.0001, t + 0.025);
-          noise.connect(bp); bp.connect(ng); ng.connect(ctx.destination);
+          noise.connect(bp); bp.connect(ng); ng.connect(master);
           noise.start(t); noise.stop(t + noiseLen);
         };
         makeKlock(0);
